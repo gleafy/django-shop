@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>{{ object.title }}</h1>
+<p>{{ object.content }}</p>
+{% if object.preview %}
+<img src="{{ object.preview.url }}" alt="{{ object.title }}">
+{% endif %}
+<p>Просмотров: {{ object.views_count }}</p>
+<a href="{% url 'blog:update' object.pk %}" class="btn btn-primary">Редактировать</a>
+<a href="{% url 'blog:delete' object.pk %}" class="btn btn-danger">Удалить</a>
+{% endblock %}
