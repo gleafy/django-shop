@@ -1,4 +1,5 @@
 from django import forms
+from django.core.exceptions import ValidationError
 from catalog.models import Product
 
 FORBIDDEN_WORDS = ['казино', 'криптовалюта', 'крипта', 'биржа', 'дешево', 'бесплатно', 'обман', 'полиция', 'радар']
@@ -28,6 +29,15 @@ class ProductForm(forms.ModelForm):
             raise forms.ValidationError('Цена не может быть отрицательной')
         return price
 
+    def clean_image(self):
+        image = self.cleaned_data.get('image', False)
+        if image:
+            if image.size > 5 * 1024 * 1024:
+                raise ValidationError('Размер файла не должен превышать 5 МБ')
+            if not image.name.lower().endswith(('.jpg', '.jpeg', '.png')):
+                raise ValidationError('Формат файла должен быть JPEG или PNG')
+        return image
+        
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
