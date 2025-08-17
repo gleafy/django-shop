@@ -1,11 +1,9 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from catalog.models import Product, Contact
 
 def home_view(request):
-    latest_products = Product.objects.order_by('-created_at')[:5]
-    for product in latest_products:
-        print(product.name)
-    return render(request, 'home.html')
+    products = Product.objects.all().order_by('-created_at')[:5]
+    return render(request, 'home.html', {'products': products})
 
 def contacts_view(request):
     contacts = Contact.objects.all()
@@ -18,3 +16,7 @@ def contacts_view(request):
     else:
         success = False
     return render(request, 'contacts.html', {'success': success, 'contacts': contacts})
+
+def product_detail(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+    return render(request, 'product_detail.html', {'product': product})
