@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Блоговые записи</h1>
+<a href="{% url 'blog:create' %}" class="btn btn-primary">Создать запись</a>
+<ul>
+    {% for post in object_list %}
+    <li>
+        <a href="{% url 'blog:detail' post.pk %}">{{ post.title }}</a>
+        (Просмотров: {{ post.views_count }})
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

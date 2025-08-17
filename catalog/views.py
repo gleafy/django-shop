@@ -1,22 +1,30 @@
-from django.shortcuts import render, get_object_or_404
+from django.views.generic import ListView, TemplateView, DetailView
 from catalog.models import Product, Contact
 
-def home_view(request):
-    products = Product.objects.all().order_by('-created_at')[:5]
-    return render(request, 'home.html', {'products': products})
+class HomeView(ListView):
+    model = Product
+    template_name = 'home.html'
+    context_object_name = 'products'
+    queryset = Product.objects.all().order_by('-created_at')[:5]
 
-def contacts_view(request):
-    contacts = Contact.objects.all()
-    if request.method == 'POST':
+class ContactsView(TemplateView):
+    template_name = 'contacts.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['contacts'] = Contact.objects.all()
+        context['success'] = False
+        return context
+
+    def post(self, request, *args, **kwargs):
         name = request.POST.get('name')
         phone = request.POST.get('phone')
         message = request.POST.get('message')
         Contact.objects.create(name=name, phone=phone, message=message)
-        success = True
-    else:
-        success = False
-    return render(request, 'contacts.html', {'success': success, 'contacts': contacts})
+        context = self.get_context_data()
+        context['success'] = True
+        return self.render_to_response(context)
 
-def product_detail(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-    return render(request, 'product_detail.html', {'product': product})
+class ProductDetailView(DetailView):
+    model = Product
+    template_name = 'product_detail.html'
