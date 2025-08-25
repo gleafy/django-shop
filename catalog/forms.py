@@ -9,6 +9,21 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = ['name', 'description', 'image', 'category', 'price']
 
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'
+        self.fields['image'].widget.attrs['class'] = 'form-control-file'
+
+    def save(self, commit=True):
+        product = super().save(commit=False)
+        if self.user and not product.owner:
+            product.owner = self.user
+        if commit:
+            product.save()
+        return product
+
     def clean_name(self):
         name = self.cleaned_data['name'].lower()
         for word in FORBIDDEN_WORDS:
@@ -37,9 +52,3 @@ class ProductForm(forms.ModelForm):
             if not image.name.lower().endswith(('.jpg', '.jpeg', '.png')):
                 raise ValidationError('Формат файла должен быть JPEG или PNG')
         return image
-        
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        for field_name, field in self.fields.items():
-            field.widget.attrs['class'] = 'form-control'
-        self.fields['image'].widget.attrs['class'] = 'form-control-file'
