@@ -1,11 +1,12 @@
 from django.views.generic import ListView, TemplateView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
-from catalog.models import Product, Contact
+from catalog.models import Product, Contact, Category
 from catalog.forms import ProductForm
+from catalog.services import get_products_by_category
 
 class HomeView(ListView):
     model = Product
@@ -91,3 +92,16 @@ class ProductUnpublishView(LoginRequiredMixin, ModeratorRequiredMixin, UpdateVie
         product.publish_status = 'draft'
         product.save()
         return super().form_valid(form)
+
+class CategoryProductsView(ListView):
+    template_name = 'category_products.html'
+    context_object_name = 'products'
+
+    def get_queryset(self):
+        category_id = self.kwargs['category_id']
+        return get_products_by_category(category_id)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['category'] = get_object_or_404(Category, id=self.kwargs['category_id'])
+        return context
